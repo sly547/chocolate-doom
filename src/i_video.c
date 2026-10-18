@@ -287,7 +287,7 @@ void I_ShutdownGraphics(void)
         SDL_DestroyTexture(texture_upscaled);
         SDL_DestroyTexture(texture);
         //SDL_DestroyRenderer(renderer);
-        SDL_DestroyWindow(screen);
+        //SDL_DestroyWindow(screen);
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
         initialized = false;
@@ -376,7 +376,7 @@ static void HandleWindowEvent(SDL_WindowEvent *event)
         // update the video_display config variable.
 
         case SDL_WINDOWEVENT_MOVED:
-            i = SDL_GetWindowDisplayIndex(screen);
+            //i = SDL_GetWindowDisplayIndex(screen);
             if (i >= 0)
             {
                 video_display = i;
@@ -417,12 +417,12 @@ static void I_ToggleFullScreen(void)
         flags |= SDL_WINDOW_FULLSCREEN_DESKTOP;
     }
 
-    SDL_SetWindowFullscreen(screen, flags);
+    //SDL_SetWindowFullscreen(screen, flags);
 
     if (!fullscreen)
     {
         AdjustWindowSize();
-        SDL_SetWindowSize(screen, window_width, window_height);
+        //SDL_SetWindowSize(screen, window_width, window_height);
     }
 }
 
@@ -471,10 +471,12 @@ void I_GetEvent(void)
                 break;
 
             case SDL_WINDOWEVENT:
+#if 0
                 if (sdlevent.window.windowID == SDL_GetWindowID(screen))
                 {
                     HandleWindowEvent(&sdlevent.window);
                 }
+#endif // if 0
                 break;
 
             default:
@@ -719,6 +721,7 @@ void I_FinishUpdate (void)
     if (noblit)
         return;
 
+#if 0
     if (need_resize)
     {
         if (SDL_GetTicks() > last_resize_time + RESIZE_DELAY)
@@ -747,6 +750,7 @@ void I_FinishUpdate (void)
     }
 
     UpdateGrab();
+#endif // if 0
 
 #if 0 // SDL2-TODO
     // Don't update the screen if the window isn't visible.
@@ -922,7 +926,7 @@ void I_InitWindowTitle(void)
     char *buf;
 
     buf = M_StringJoin(window_title, " - ", PACKAGE_STRING, NULL);
-    SDL_SetWindowTitle(screen, buf);
+    //SDL_SetWindowTitle(screen, buf);
     free(buf);
 }
 
@@ -937,6 +941,7 @@ void I_RegisterWindowIcon(const unsigned int *icon, int width, int height)
 
 void I_InitWindowIcon(void)
 {
+#if 0
     SDL_Surface *surface;
 
     surface = SDL_CreateRGBSurfaceFrom((void *) icon_data, icon_w, icon_h,
@@ -946,6 +951,7 @@ void I_InitWindowIcon(void)
 
     SDL_SetWindowIcon(screen, surface);
     SDL_FreeSurface(surface);
+#endif // if 0
 }
 
 // Set video size to a particular scale factor (1x, 2x, 3x, etc.)
@@ -1274,6 +1280,7 @@ static void SetVideoMode(void)
     // "window_flags" contains the fullscreen flag (see above), then
     // w and h are ignored.
 
+#if 0 // no screen
     if (screen == NULL)
     {
         screen = SDL_CreateWindow(NULL, x, y, w, h, window_flags);
@@ -1289,6 +1296,7 @@ static void SetVideoMode(void)
         I_InitWindowTitle();
         I_InitWindowIcon();
     }
+#endif // if 0
 
     // The SDL_RENDERER_TARGETTEXTURE flag is required to render the
     // intermediate texture into the upscaled texture.
