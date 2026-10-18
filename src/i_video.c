@@ -115,6 +115,9 @@ int video_display = 0;
 int window_width = 800;
 int window_height = 600;
 
+int *scale_ylookup = NULL;
+int *scale_xlookup = NULL;
+
 // Fullscreen mode, 0x0 for SDL_WINDOW_FULLSCREEN_DESKTOP.
 
 int fullscreen_width = 0, fullscreen_height = 0;
@@ -284,6 +287,8 @@ void I_ShutdownGraphics(void)
         //SDL_FreeSurface(screenbuffer);
         free(argbbuffer);
         free(screenbuffer);
+        free(scale_xlookup);
+        free(scale_ylookup);
         SDL_DestroyTexture(texture_upscaled);
         SDL_DestroyTexture(texture);
         //SDL_DestroyRenderer(renderer);
@@ -809,8 +814,21 @@ void I_FinishUpdate (void)
     for (int i = 0; i < SCREENWIDTH*SCREENHEIGHT; i++) {
         SDL_Color *color = &palette[screenbuffer[i]];
         argbbuffer[i] = (0xff << 24) | (color->r << 16) | (color->g << 8) | color->b;
-        *(((uint32_t *) map) + i) = argbbuffer[i];
     }
+#if 0 // no scaling
+    for (int i = 0; i < SCREENHEIGHT; i++) {
+        for (int j = 0; j < SCREENWIDTH; j++) {
+            *(((uint32_t *) map) + i*4864/4 + j) = argbbuffer[i*SCREENWIDTH + j];
+        }
+    }
+#else // nearest integer
+    for (int i = 0; i < window_height; i++) {
+        for (int j = 0; j < window_width; j++) {
+            // FIXME the dumb buffer pitch is hardcoded for the Wormdingler here
+            *(((uint32_t *) map) + i*4864/4 + j) = argbbuffer[scale_ylookup[i] + scale_xlookup[j]];
+        }
+    }
+#endif
 
 # if 0 // no renderer
     // Make sure the pillarboxes are kept clear each frame.
@@ -1527,6 +1545,22 @@ void I_InitGraphics(void)
     window_width=720;
     window_height=576;
     SetVideoMode();
+
+    scale_ylookup = malloc(window_height * sizeof(* scale_ylookup));
+    if (!scale_ylookup) {
+        I_Error("Could not allocate scale_ylookup");
+    }
+    for (int i = 0; i < window_height; i++) {
+        scale_ylookup[i] = (i*SCREENHEIGHT/window_height)*SCREENWIDTH;
+    }
+
+    scale_xlookup = malloc(window_width * sizeof(* scale_xlookup));
+    if (!scale_xlookup) {
+        I_Error("Could not allocate scale_xlookup");
+    }
+    for (int j = 0; j < window_width; j++) {
+        scale_xlookup[j] = j*SCREENWIDTH/window_width;
+    }
 
     // Start with a clear black screen
     // (screen will be flipped after we set the palette)
