@@ -65,7 +65,7 @@ static const char *window_title = "";
 // is upscaled by an integer factor UPSCALE using "nearest" scaling and which
 // in turn is finally rendered to screen using "linear" scaling.
 
-static SDL_Surface *screenbuffer = NULL;
+static pixel_t *screenbuffer = NULL;
 static SDL_Surface *argbbuffer = NULL;
 static SDL_Texture *texture = NULL;
 static SDL_Texture *texture_upscaled = NULL;
@@ -277,7 +277,8 @@ void I_ShutdownGraphics(void)
         SetShowCursor(true);
 
         SDL_FreeSurface(argbbuffer);
-        SDL_FreeSurface(screenbuffer);
+        //SDL_FreeSurface(screenbuffer);
+        free(screenbuffer);
         SDL_DestroyTexture(texture_upscaled);
         SDL_DestroyTexture(texture);
         //SDL_DestroyRenderer(renderer);
@@ -1359,16 +1360,22 @@ static void SetVideoMode(void)
 
     if (screenbuffer != NULL)
     {
-        SDL_FreeSurface(screenbuffer);
+        //SDL_FreeSurface(screenbuffer);
+        free(screenbuffer);
         screenbuffer = NULL;
     }
 
     if (screenbuffer == NULL)
     {
-        screenbuffer = SDL_CreateRGBSurface(0,
-                                            SCREENWIDTH, SCREENHEIGHT, 8,
-                                            0, 0, 0, 0);
-        SDL_FillRect(screenbuffer, NULL, 0);
+        //screenbuffer = SDL_CreateRGBSurface(0,
+        //                                    SCREENWIDTH, SCREENHEIGHT, 8,
+        //                                    0, 0, 0, 0);
+        //SDL_FillRect(screenbuffer, NULL, 0);
+
+        screenbuffer = malloc(SCREENWIDTH * SCREENHEIGHT * sizeof(pixel_t));
+        if (!screenbuffer) {
+            I_Error("Failed to initialize the 320x200x8 canvas");
+        }
     }
 
     // Format of argbbuffer must match the screen pixel format because we
@@ -1489,13 +1496,15 @@ void I_InitGraphics(void)
     // Start with a clear black screen
     // (screen will be flipped after we set the palette)
 
-    SDL_FillRect(screenbuffer, NULL, 0);
+    //SDL_FillRect(screenbuffer, NULL, 0);
 
     // Set the palette
 
     doompal = W_CacheLumpName(DEH_String("PLAYPAL"), PU_CACHE);
+    // set "palette", an array of SDL_Color, using gamma correction if enabled
     I_SetPalette(doompal);
-    SDL_SetPaletteColors(screenbuffer->format->palette, palette, 0, 256);
+    // use "palette" to update the palette of the SDL surface
+    //SDL_SetPaletteColors(screenbuffer->format->palette, palette, 0, 256);
 
     // SDL2-TODO UpdateFocus();
     UpdateGrab();
@@ -1515,7 +1524,7 @@ void I_InitGraphics(void)
     // 32-bit RGBA screen buffer that gets loaded into a texture that gets
     // finally rendered into our window or full screen in I_FinishUpdate().
 
-    I_VideoBuffer = screenbuffer->pixels;
+    I_VideoBuffer = screenbuffer;
     V_RestoreBuffer();
 
     // Clear the screen to black.
