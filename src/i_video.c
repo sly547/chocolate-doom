@@ -34,6 +34,7 @@
 #include "d_loop.h"
 #include "deh_str.h"
 #include "doomtype.h"
+#include "drm_dumb.h"
 #include "i_input.h"
 #include "i_joystick.h"
 #include "i_system.h"
@@ -69,6 +70,8 @@ static pixel_t *screenbuffer = NULL;
 static uint32_t *argbbuffer = NULL;
 static SDL_Texture *texture = NULL;
 static SDL_Texture *texture_upscaled = NULL;
+
+void * map = NULL;
 
 static SDL_Rect blit_rect = {
     0,
@@ -276,6 +279,7 @@ void I_ShutdownGraphics(void)
     {
         SetShowCursor(true);
 
+        CleanupDrmDumb(map);
         //SDL_FreeSurface(argbbuffer);
         //SDL_FreeSurface(screenbuffer);
         free(argbbuffer);
@@ -800,7 +804,8 @@ void I_FinishUpdate (void)
 
     for (int i = 0; i < SCREENWIDTH*SCREENHEIGHT; i++) {
         SDL_Color *color = &palette[screenbuffer[i]];
-        argbbuffer[i] = 0xff & color->r << 16 & color->g << 8 & color->b;
+        argbbuffer[i] = (0xff << 24) | (color->r << 16) | (color->g << 8) | color->b;
+        *(((uint32_t *) map) + i) = argbbuffer[i];
     }
 
 # if 0 // no renderer
@@ -1412,6 +1417,10 @@ static void SetVideoMode(void)
     }
 
     /* set up a DRM/KMS mode and dumb buffer here */
+    map = InitDrmDumb();
+    if (!map) {
+        I_Error("Failed to initialize the DRM dumb buffer");
+    }
 
 #if 0 // no renderer
 

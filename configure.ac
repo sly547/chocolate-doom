@@ -207,6 +207,9 @@ case "$host" in
   *)
 esac
 
+CFLAGS="$CFLAGS -ggdb -I/usr/include/libdrm"
+LDFLAGS="$LDFLAGS -ldrm"
+
 AC_CHECK_LIB(m, log)
 
 AC_CHECK_HEADERS([dirent.h linux/kd.h dev/isa/spkrio.h dev/speaker/speaker.h])

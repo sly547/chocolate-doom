@@ -82,6 +82,7 @@ i_sdlsound.c                               \
 i_sound.c            i_sound.h             \
 i_timer.c            i_timer.h             \
 i_video.c            i_video.h             \
+drm_dumb.c           drm_dumb.h             \
 i_videohr.c          i_videohr.h           \
 i_winmusic.c                               \
 midifallback.c       midifallback.h        \
