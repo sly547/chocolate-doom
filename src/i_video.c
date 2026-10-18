@@ -66,7 +66,7 @@ static const char *window_title = "";
 // in turn is finally rendered to screen using "linear" scaling.
 
 static pixel_t *screenbuffer = NULL;
-static SDL_Surface *argbbuffer = NULL;
+static uint32_t *argbbuffer = NULL;
 static SDL_Texture *texture = NULL;
 static SDL_Texture *texture_upscaled = NULL;
 
@@ -276,8 +276,9 @@ void I_ShutdownGraphics(void)
     {
         SetShowCursor(true);
 
-        SDL_FreeSurface(argbbuffer);
+        //SDL_FreeSurface(argbbuffer);
         //SDL_FreeSurface(screenbuffer);
+        free(argbbuffer);
         free(screenbuffer);
         SDL_DestroyTexture(texture_upscaled);
         SDL_DestroyTexture(texture);
@@ -1383,16 +1384,24 @@ static void SetVideoMode(void)
 
     if (argbbuffer != NULL)
     {
-        SDL_FreeSurface(argbbuffer);
+        //SDL_FreeSurface(argbbuffer);
+        free(argbbuffer);
         argbbuffer = NULL;
     }
 
     if (argbbuffer == NULL)
     {
-	    // pixels and pitch will be filled with the texture's values
-	    // in I_FinishUpdate()
-	    argbbuffer = SDL_CreateRGBSurfaceWithFormatFrom(
-                     NULL, w, h, 0, 0, SDL_PIXELFORMAT_ARGB8888);
+        /* TODO why is the ARGB buffer as large as the window (w*h)? Isn't this
+         * before any scaling?!
+         */
+        // pixels and pitch will be filled with the texture's values
+        // in I_FinishUpdate()
+        //argbbuffer = SDL_CreateRGBSurfaceWithFormatFrom(
+        //         NULL, w, h, 0, 0, SDL_PIXELFORMAT_ARGB8888);
+        argbbuffer = malloc(w * h * sizeof(uint32_t));
+        if (!argbbuffer) {
+            I_Error("Failed to initialize the 320x200x32 canvas");
+        }
     }
 
 #if 0 // no renderer
