@@ -1213,7 +1213,11 @@ static void SetVideoMode(void)
 
     w = window_width;
     h = window_height;
+    x = 0;
+    y = 0;
 
+    window_flags = SDL_WINDOW_HIDDEN;
+#if 0 // no need to set any more flags here
     // In windowed mode, the window can be resized while the game is
     // running.
     window_flags = SDL_WINDOW_RESIZABLE;
@@ -1249,6 +1253,7 @@ static void SetVideoMode(void)
     }
 
     I_GetWindowPosition(&x, &y, w, h);
+#endif // if 0
 
     // Create window and renderer contexts. We set the window title
     // later anyway and leave the window position "undefined". If
@@ -1265,7 +1270,7 @@ static void SetVideoMode(void)
             SDL_GetError());
         }
 
-        SDL_SetWindowMinimumSize(screen, SCREENWIDTH, actualheight);
+        //SDL_SetWindowMinimumSize(screen, SCREENWIDTH, actualheight);
 
         I_InitWindowTitle();
         I_InitWindowIcon();
@@ -1427,6 +1432,7 @@ void I_InitGraphics(void)
 {
     SDL_Event dummy;
     byte *doompal;
+#if 0
     char *env;
 
     // Pass through the XSCREENSAVER_WINDOW environment variable to 
@@ -1448,17 +1454,21 @@ void I_InitGraphics(void)
 
     SetSDLVideoDriver();
 
+#endif // if 0
+
     if (SDL_Init(SDL_INIT_VIDEO) < 0) 
     {
         I_Error("Failed to initialize video: %s", SDL_GetError());
     }
 
+#if 0
     // When in screensaver mode, run full screen and auto detect
     // screen dimensions (don't change video mode)
     if (screensaver_mode)
     {
         fullscreen = true;
     }
+#endif // if 0
 
     if (aspect_ratio_correct == 1)
     {
@@ -1471,7 +1481,9 @@ void I_InitGraphics(void)
 
     // Create the game window; this may switch graphic modes depending
     // on configuration.
-    AdjustWindowSize();
+    //AdjustWindowSize();
+    window_width=720;
+    window_height=576;
     SetVideoMode();
 
     // Start with a clear black screen
