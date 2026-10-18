@@ -786,17 +786,24 @@ void I_FinishUpdate (void)
         }
     }
 #endif // if 0
-# if 0
 
     // Blit from the paletted 8-bit screen buffer to the intermediate
     // 32-bit RGBA buffer and update the intermediate texture with the
     // contents of the RGBA buffer.
 
+# if 0
     SDL_LockTexture(texture, &blit_rect, &argbbuffer->pixels,
                     &argbbuffer->pitch);
     SDL_LowerBlit(screenbuffer, &blit_rect, argbbuffer, &blit_rect);
     SDL_UnlockTexture(texture);
+#endif // if 0
 
+    for (int i = 0; i < SCREENWIDTH*SCREENHEIGHT; i++) {
+        SDL_Color *color = &palette[screenbuffer[i]];
+        argbbuffer[i] = 0xff & color->r << 16 & color->g << 8 & color->b;
+    }
+
+# if 0 // no renderer
     // Make sure the pillarboxes are kept clear each frame.
 
     SDL_RenderClear(renderer);
@@ -1398,11 +1405,13 @@ static void SetVideoMode(void)
         // in I_FinishUpdate()
         //argbbuffer = SDL_CreateRGBSurfaceWithFormatFrom(
         //         NULL, w, h, 0, 0, SDL_PIXELFORMAT_ARGB8888);
-        argbbuffer = malloc(w * h * sizeof(uint32_t));
+        argbbuffer = malloc(SCREENWIDTH * SCREENHEIGHT * sizeof(uint32_t));
         if (!argbbuffer) {
             I_Error("Failed to initialize the 320x200x32 canvas");
         }
     }
+
+    /* set up a DRM/KMS mode and dumb buffer here */
 
 #if 0 // no renderer
 
