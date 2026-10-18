@@ -90,6 +90,9 @@ AS_IF([test "x$enable_sdl2net" != xno], [
     AC_DEFINE([DISABLE_SDL2NET], [1], [SDL2_net disabled])
 ])
 
+# libdrm is required
+PKG_CHECK_MODULES(LIBDRM, [libdrm >= 2.4.131])
+
 # Check for bash-completion.
 AC_ARG_ENABLE([bash-completion],
 AS_HELP_STRING([--disable-bash-completion], [Disable bash-completion])
@@ -198,17 +201,14 @@ AS_IF([test "x$with_fluidsynth" != xno] && [test "x$enable_sdl2mixer" != xno], [
 
 # TODO: We currently link everything against libraries that don't need it.
 # Use the specific library CFLAGS/LIBS variables instead of setting them here.
-CFLAGS="$CFLAGS $SDL_CFLAGS ${SAMPLERATE_CFLAGS:-} ${PNG_CFLAGS:-} ${FLUIDSYNTH_CFLAGS:-}"
-LDFLAGS="$LDFLAGS $SDL_LIBS ${SAMPLERATE_LIBS:-} ${PNG_LIBS:-} ${FLUIDSYNTH_LIBS:-}"
+CFLAGS="$CFLAGS $SDL_CFLAGS $LIBDRM_CFLAGS ${SAMPLERATE_CFLAGS:-} ${PNG_CFLAGS:-} ${FLUIDSYNTH_CFLAGS:-}"
+LDFLAGS="$LDFLAGS $SDL_LIBS $LIBDRM_LIBS ${SAMPLERATE_LIBS:-} ${PNG_LIBS:-} ${FLUIDSYNTH_LIBS:-}"
 case "$host" in
   *-*-mingw* | *-*-cygwin* | *-*-msvc* )
     LDFLAGS="$LDFLAGS -lwinmm -lshlwapi"
     ;;
   *)
 esac
-
-CFLAGS="$CFLAGS -ggdb -I/usr/include/libdrm"
-LDFLAGS="$LDFLAGS -ldrm"
 
 AC_CHECK_LIB(m, log)
 
