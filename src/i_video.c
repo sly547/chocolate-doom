@@ -21,7 +21,7 @@
 #include <string.h>
 
 #include "SDL.h"
-#include "SDL_opengl.h"
+//#include "SDL_opengl.h"
 
 #ifdef _WIN32
 #ifndef WIN32_LEAN_AND_MEAN
@@ -280,7 +280,7 @@ void I_ShutdownGraphics(void)
         SDL_FreeSurface(screenbuffer);
         SDL_DestroyTexture(texture_upscaled);
         SDL_DestroyTexture(texture);
-        SDL_DestroyRenderer(renderer);
+        //SDL_DestroyRenderer(renderer);
         SDL_DestroyWindow(screen);
         SDL_QuitSubSystem(SDL_INIT_VIDEO);
 
@@ -730,7 +730,7 @@ void I_FinishUpdate (void)
                 AdjustWindowSize();
                 SDL_SetWindowSize(screen, window_width, window_height);
             }
-            CreateUpscaledTexture(false);
+            //CreateUpscaledTexture(false);
             need_resize = false;
             palette_to_set = true;
         }
@@ -769,6 +769,7 @@ void I_FinishUpdate (void)
     // Draw disk icon before blit, if necessary.
     V_DrawDiskIcon();
 
+# if 0 // TODO handle palette updates
     if (palette_to_set)
     {
         SDL_SetPaletteColors(screenbuffer->format->palette, palette, 0, 256);
@@ -782,6 +783,8 @@ void I_FinishUpdate (void)
                 palette[0].b, SDL_ALPHA_OPAQUE);
         }
     }
+#endif // if 0
+# if 0
 
     // Blit from the paletted 8-bit screen buffer to the intermediate
     // 32-bit RGBA buffer and update the intermediate texture with the
@@ -818,6 +821,8 @@ void I_FinishUpdate (void)
     // Draw!
 
     SDL_RenderPresent(renderer);
+
+#endif // if 0 (no renderer)
 
     // Restore background and undo the disk indicator, if it was drawn.
     V_RestoreDiskBackground();
@@ -1288,6 +1293,7 @@ static void SetVideoMode(void)
         renderer_flags &= ~SDL_RENDERER_PRESENTVSYNC;
     }
 
+#if 0 // don't create an SDL renderer
     if (renderer != NULL)
     {
         SDL_DestroyRenderer(renderer);
@@ -1342,6 +1348,7 @@ static void SetVideoMode(void)
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
     SDL_RenderPresent(renderer);
+#endif // if 0 (no renderer)
 
     // Create the 8-bit paletted and the 32-bit RGBA screenbuffer surfaces.
 
@@ -1375,6 +1382,8 @@ static void SetVideoMode(void)
 	    argbbuffer = SDL_CreateRGBSurfaceWithFormatFrom(
                      NULL, w, h, 0, 0, SDL_PIXELFORMAT_ARGB8888);
     }
+
+#if 0 // no renderer
 
     if (texture != NULL)
     {
@@ -1411,6 +1420,7 @@ static void SetVideoMode(void)
     // Initially create the upscaled texture for rendering to screen
 
     CreateUpscaledTexture(true);
+#endif // if 0 (no renderer)
 }
 
 void I_InitGraphics(void)
