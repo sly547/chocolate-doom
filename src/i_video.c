@@ -824,8 +824,7 @@ void I_FinishUpdate (void)
 #else // nearest integer
     for (int i = 0; i < window_height; i++) {
         for (int j = 0; j < window_width; j++) {
-            // FIXME the dumb buffer pitch is hardcoded for the Wormdingler here
-            *(((uint32_t *) dumb->map) + i*4864/4 + j) = argbbuffer[scale_ylookup[i] + scale_xlookup[j]];
+            *(((uint32_t *) dumb->map) + i*dumb->creq.pitch/4 + j) = argbbuffer[scale_ylookup[i] + scale_xlookup[j]];
         }
     }
 #endif
