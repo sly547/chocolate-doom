@@ -71,7 +71,7 @@ static uint32_t *argbbuffer = NULL;
 static SDL_Texture *texture = NULL;
 static SDL_Texture *texture_upscaled = NULL;
 
-void * map = NULL;
+dumb_buffer_t * dumb = NULL;
 
 static SDL_Rect blit_rect = {
     0,
@@ -282,7 +282,7 @@ void I_ShutdownGraphics(void)
     {
         SetShowCursor(true);
 
-        CleanupDrmDumb(map);
+        CleanupDrmDumb(dumb);
         //SDL_FreeSurface(argbbuffer);
         //SDL_FreeSurface(screenbuffer);
         free(argbbuffer);
@@ -818,14 +818,14 @@ void I_FinishUpdate (void)
 #if 0 // no scaling
     for (int i = 0; i < SCREENHEIGHT; i++) {
         for (int j = 0; j < SCREENWIDTH; j++) {
-            *(((uint32_t *) map) + i*4864/4 + j) = argbbuffer[i*SCREENWIDTH + j];
+            *(((uint32_t *) dumb->map) + i*4864/4 + j) = argbbuffer[i*SCREENWIDTH + j];
         }
     }
 #else // nearest integer
     for (int i = 0; i < window_height; i++) {
         for (int j = 0; j < window_width; j++) {
             // FIXME the dumb buffer pitch is hardcoded for the Wormdingler here
-            *(((uint32_t *) map) + i*4864/4 + j) = argbbuffer[scale_ylookup[i] + scale_xlookup[j]];
+            *(((uint32_t *) dumb->map) + i*4864/4 + j) = argbbuffer[scale_ylookup[i] + scale_xlookup[j]];
         }
     }
 #endif
@@ -1443,8 +1443,8 @@ static void SetVideoMode(void)
     }
 
     /* set up a DRM/KMS mode and dumb buffer here */
-    map = InitDrmDumb();
-    if (!map) {
+    dumb = InitDrmDumb();
+    if (!dumb) {
         I_Error("Failed to initialize the DRM dumb buffer");
     }
 
