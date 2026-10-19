@@ -1511,9 +1511,9 @@ void I_InitGraphics(void)
         putenv(winenv);
     }
 
-    SetSDLVideoDriver();
-
 #endif // if 0
+
+    SetSDLVideoDriver();
 
     if (SDL_Init(SDL_INIT_VIDEO) < 0) 
     {
